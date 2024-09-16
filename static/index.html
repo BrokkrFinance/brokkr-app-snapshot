@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snapshot Data</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .input-container {
+        margin-bottom: 10px;
+      }
+      .result {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Fetch Snapshot Data</h1>
+    <div class="input-container">
+      <label for="snapshotBlock">Snapshot Block:</label>
+      <input type="text" id="snapshotBlock" />
+    </div>
+    <div class="input-container">
+      <label for="usdThreshold">USD Threshold:</label>
+      <input type="number" id="usdThreshold" />
+    </div>
+    <button onclick="fetchData()">Fetch Data</button>
+
+    <div class="result" id="result"></div>
+
+    <script>
+      function fetchData() {
+        const snapshotBlock = document.getElementById("snapshotBlock").value;
+        const usdThreshold = document.getElementById("usdThreshold").value;
+
+        fetch(`/snapshot?snapshotBlock=${snapshotBlock}&usdThreshold=${usdThreshold}`)
+          .then((response) => response.json())
+          .then((data) => {
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "";
+
+            if (data.length > 0) {
+              data.forEach((category) => {
+                if (category.snapshotData.length > 0) {
+                  category.snapshotData.forEach((product) => {
+                    const titleDiv = document.createElement("div");
+                    titleDiv.innerHTML = `<h3>Address: ${product.address}</h3> <h3>Token Name: ${product.tokenName}</h3> <h3>Total TVL: ${product.tvlUsd}</h3>`;
+                    resultDiv.appendChild(titleDiv);
+
+                    // Create a table
+                    const table = document.createElement("table");
+                    table.setAttribute("border", "1");
+                    table.setAttribute("cellpadding", "5");
+                    table.setAttribute("cellspacing", "0");
+
+                    // Create table headers
+                    const header = document.createElement("thead");
+                    header.innerHTML = `<tr> <th>User Address</th> <th>Token Amount</th> <th>USD Equivalent</th> </tr>`;
+                    table.appendChild(header);
+
+                    // Create table body
+                    const tbody = document.createElement("tbody");
+
+                    product.holdingData.forEach((holding) => {
+                      const row = document.createElement("tr");
+                      row.innerHTML = `
+        <td>${holding.userAddress}</td>
+        <td>${holding.tokenAmount}</td>
+        <td>${holding.usdEquivalent}</td>
+        `;
+                      tbody.appendChild(row);
+                    });
+                    table.appendChild(tbody);
+                    resultDiv.appendChild(table);
+                    resultDiv.appendChild(document.createElement("hr"));
+                  });
+                }
+              });
+            } else {
+              resultDiv.innerHTML = "<p>No data available for the given parameters.</p>";
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching data:", error);
+          });
+      }
+    </script>
+  </body>
+</html>
