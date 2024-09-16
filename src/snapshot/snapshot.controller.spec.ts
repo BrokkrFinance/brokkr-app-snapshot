@@ -10,13 +10,14 @@ import { TokenBasedSnapshotService } from "./helper-services/token-based-snapsho
 import { ArrakisVaultSnapshotService } from "./helper-services/arrakis-vault-snapshot.service";
 import { DcaSnapshotService } from "./helper-services/dca-snapshot.service";
 import { Logger } from "@nestjs/common";
+import { PriceOraclesModule } from "../price-oracles/price-oracles.module";
 
 describe("SnapshotController", () => {
   let controller: SnapshotController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MockDatabaseModule, BrokkrSnapshotConfigModule, MockContractConnectorsModule],
+      imports: [MockDatabaseModule, BrokkrSnapshotConfigModule, MockContractConnectorsModule, PriceOraclesModule],
       providers: [
         SnapshotService,
         QaService,
