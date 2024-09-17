@@ -4,17 +4,17 @@ import { VaultDbService } from "../../db/vault-db/vault-db.service";
 import { Injectable, Logger } from "@nestjs/common";
 import { ArrakisContractsService } from "../../contract-connectors/arrakis-contracts/arrakis-contracts.service";
 import { BrokkrSnapshotConfigService } from "../../config/brokkr-snapshot-config.service";
-import { UserFirstInvestmentService } from "../../db/user-first-investment-db/user-first-investment-db.service";
-import { CoingeckoService } from "../../price-oracles/coingecko/coingecko.service";
+import addressesData from "../addresses.json";
+import { AddressEntry } from "../../shared/types/addressEntry";
 
 @Injectable()
 export class ArrakisVaultSnapshotService {
+  private additionalUserAddresses: AddressEntry[] = addressesData;
+
   constructor(
     private arrakisVaultDbService: VaultDbService,
-    private userFirstInvestmentService: UserFirstInvestmentService,
     private arrakisVaultContractService: ArrakisContractsService,
     private configService: BrokkrSnapshotConfigService,
-    private coingeckoService: CoingeckoService,
     private logger: Logger,
   ) {}
 
@@ -25,7 +25,7 @@ export class ArrakisVaultSnapshotService {
     for (const arrakisVaultConfig of arrakisVaultConfigs) {
       this.logger.debug(`Starting Arrakis Vault snapshot for address: ${arrakisVaultConfig.address}`);
       try {
-        const [tvlUsd, tokenName, totalTokenSupply, tokenPair, userAddresses, token0Price, token1Price] =
+        const [tvlUsd, tokenName, totalTokenSupply, tokenPair, userAddressesFromDb, token0Price, token1Price] =
           await Promise.all([
             this.arrakisVaultContractService.getTvlUsd(arrakisVaultConfig, snapshotBlock),
             this.arrakisVaultContractService.getName(arrakisVaultConfig.address),
@@ -35,6 +35,20 @@ export class ArrakisVaultSnapshotService {
             this.arrakisVaultContractService.getToken0Price(arrakisVaultConfig, Number(snapshotBlock)),
             this.arrakisVaultContractService.getToken1Price(arrakisVaultConfig, Number(snapshotBlock)),
           ]);
+
+        // Find additional user addresses from addresses.json based on matching productAddress
+        const additionalEntry = this.additionalUserAddresses.find(
+          (entry) => entry.productAddress.toLowerCase() === arrakisVaultConfig.address.toLowerCase(),
+        );
+
+        // Merge user addresses from DB and JSON
+        let userAddresses: string[] = [...userAddressesFromDb];
+        if (additionalEntry) {
+          userAddresses = [...userAddresses, ...additionalEntry.userAddresses];
+          this.logger.debug(
+            `Added ${additionalEntry.userAddresses.length} userAddresses from addresses.json for productAddress: ${arrakisVaultConfig.address}`,
+          );
+        }
 
         const holdingData: MultiTokenHoldingData[] = [];
         for (const userAddress of userAddresses) {

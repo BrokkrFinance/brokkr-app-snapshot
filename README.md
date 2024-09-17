@@ -91,7 +91,8 @@ src/
 │       └── ISnapshot.ts
 ├── snapshot/
 │   ├── snapshot.service.ts
-│   └── snapshot.controller.ts
+│   ├── snapshot.controller.ts
+│   └── addresses.json
 └── qa/
     └── qa.service.ts
 ```
@@ -101,4 +102,5 @@ src/
 - **`db/`**: Database interaction services and models.
 - **`shared/`**: Shared constants and models used across the application.
 - **`snapshot/`**: The main SnapshotService and its controller.
+  - **`snapshot/addresses.json`**: A JSON file with productAddress and userAddress arrays. If some users need be added manually, it can be done here!
 - **`qa/`**: Quality Assurance services for validating snapshot data.

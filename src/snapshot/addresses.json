@@ -1,0 +1,34 @@
+[
+  {
+    "productAddress": "0xb0e2880d4429d10ef1956062b260adf09557a1da",
+    "userAddresses": ["0x2695f29fd9f645bdf37c7ea85618fcd5266080a9"]
+  },
+  {
+    "productAddress": "0x2eaf73f8e6bcf606f56e5cf201756c1f0565c068",
+    "userAddresses": ["0xc170d7be3aea20b301306e8786faad5109b13537", "0x2695f29fd9f645bdf37c7ea85618fcd5266080a9"]
+  },
+  {
+    "productAddress": "0xca227cb6197b57d08888982bfa93619f67b4773a",
+    "userAddresses": ["0xa4b45e839d5d0eb6409baf2d2c9cf82a4948931b", "0x629d40d973359d8fff3123ad8966dc39e0ce8c45"]
+  },
+  {
+    "productAddress": "0xbbe9f28182163e767aa17072edbeccd19de12ae3",
+    "userAddresses": ["0x2695f29fd9f645bdf37c7ea85618fcd5266080a9"]
+  },
+  {
+    "productAddress": "0xf96df0db82ebec3f5e8043c26522608f09c68600",
+    "userAddresses": ["0x2695f29fd9f645bdf37c7ea85618fcd5266080a9"]
+  },
+  {
+    "productAddress": "0x6e25e57b0dc35efe3688c2850568ff59931d1182",
+    "userAddresses": ["0x2695f29fd9f645bdf37c7ea85618fcd5266080a9"]
+  },
+  {
+    "productAddress": "0x53f14744f15365a0323b4ff0693e9190ffbe4b62",
+    "userAddresses": ["0x2695f29fd9f645bdf37c7ea85618fcd5266080a9"]
+  },
+  {
+    "productAddress": "0xbaff4c732634b929033917e5df30a52efee554ff",
+    "userAddresses": ["0x2695f29fd9f645bdf37c7ea85618fcd5266080a9"]
+  }
+]

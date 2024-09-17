@@ -5,7 +5,6 @@ import { TokenIndexDbService } from "./token-index-db/token-index-db.service";
 import { TokenBasedDbService } from "./token-based-db/token-based-db.service";
 import { DcaDbService } from "./dca-db/dca-db.service";
 import { BrokkrSnapshotConfigModule } from "../config/brokkr-snapshot-config.module";
-import { UserFirstInvestmentService } from "./user-first-investment-db/user-first-investment-db.service";
 
 export const dbMockRepository = {
   find: () => {
@@ -35,10 +34,6 @@ export const mockStrategyDbServiceProviders: Provider[] = [
   },
   {
     provide: DcaDbService,
-    useValue: dbMockRepository,
-  },
-  {
-    provide: UserFirstInvestmentService,
     useValue: dbMockRepository,
   },
 ];

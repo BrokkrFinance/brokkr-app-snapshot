@@ -4,13 +4,15 @@ import { TokenIndexContractService } from "../../contract-connectors/token-index
 import { BrokkrSnapshotConfigService } from "../../config/brokkr-snapshot-config.service";
 import { SingleTokenHoldingData, SnapshotData, TokenIndexSnapshot } from "../../shared/models/ISnapshot";
 import { Address } from "viem";
-import { UserFirstInvestmentService } from "../../db/user-first-investment-db/user-first-investment-db.service";
+import addressesData from "../addresses.json";
+import { AddressEntry } from "../../shared/types/addressEntry";
 
 @Injectable()
 export class TokenIndexSnapshotService {
+  private additionalUserAddresses: AddressEntry[] = addressesData;
+
   constructor(
     private tokenIndexDbService: TokenIndexDbService,
-    private userFirstInvestmentService: UserFirstInvestmentService,
     private tokenIndexContractService: TokenIndexContractService,
     private configService: BrokkrSnapshotConfigService,
     private logger: Logger,
@@ -24,12 +26,26 @@ export class TokenIndexSnapshotService {
     for (const address of addresses) {
       this.logger.debug(`Starting TokenIndex snapshot for address: ${address}`);
       try {
-        const [tvlUsd, tokenName, totalTokenSupply, userAddresses] = await Promise.all([
+        const [tvlUsd, tokenName, totalTokenSupply, userAddressesFromDb] = await Promise.all([
           this.tokenIndexContractService.getEquityValuationForPortfolio(address, snapshotBlock),
           this.tokenIndexContractService.getTokenName(address),
           this.tokenIndexContractService.getTotalTokenSupply(address, snapshotBlock),
           this.tokenIndexDbService.getUniqueUserAddressesByPortfolio(address),
         ]);
+
+        // Find additional user addresses from addresses.json based on matching productAddress
+        const additionalEntry = this.additionalUserAddresses.find(
+          (entry) => entry.productAddress.toLowerCase() === address.toLowerCase(),
+        );
+
+        // Merge user addresses from DB and JSON
+        let userAddresses: string[] = [...userAddressesFromDb];
+        if (additionalEntry) {
+          userAddresses = [...userAddresses, ...additionalEntry.userAddresses];
+          this.logger.debug(
+            `Added ${additionalEntry.userAddresses.length} userAddresses from addresses.json for productAddress: ${address}`,
+          );
+        }
 
         const holdingData: SingleTokenHoldingData[] = [];
 

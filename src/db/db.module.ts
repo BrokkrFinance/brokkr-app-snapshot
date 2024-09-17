@@ -10,8 +10,6 @@ import { TokenBasedDbService } from "./token-based-db/token-based-db.service";
 import { DcaDbService } from "./dca-db/dca-db.service";
 import { BrokkrSnapshotConfigModule } from "../config/brokkr-snapshot-config.module";
 import { DcaOperationDocument, DcaOperationSchema } from "./schemas/DcaOperationsSchema";
-import { UserFirstInvestmentDocument, UserFirstInvestmentSchema } from "./schemas/UserFirstInvestment.schema";
-import { UserFirstInvestmentService } from "./user-first-investment-db/user-first-investment-db.service";
 
 @Module({
   imports: [
@@ -46,21 +44,8 @@ import { UserFirstInvestmentService } from "./user-first-investment-db/user-firs
         schema: DcaOperationSchema,
       },
     ]),
-    MongooseModule.forFeature([
-      {
-        name: UserFirstInvestmentDocument.name,
-        schema: UserFirstInvestmentSchema,
-      },
-    ]),
   ],
-  providers: [
-    VaultDbService,
-    TokenIndexDbService,
-    TokenBasedDbService,
-    DcaDbService,
-    UserFirstInvestmentService,
-    Logger,
-  ],
-  exports: [VaultDbService, TokenIndexDbService, TokenBasedDbService, DcaDbService, UserFirstInvestmentService],
+  providers: [VaultDbService, TokenIndexDbService, TokenBasedDbService, DcaDbService, Logger],
+  exports: [VaultDbService, TokenIndexDbService, TokenBasedDbService, DcaDbService],
 })
 export class DbModule {}

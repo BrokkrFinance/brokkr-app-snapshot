@@ -5,17 +5,17 @@ import { DcaContractService } from "../../contract-connectors/dca-contract/dca-c
 import { DcaDbService } from "../../db/dca-db/dca-db.service";
 import { Injectable, Logger } from "@nestjs/common";
 import { BrokkrSnapshotConfigService } from "../../config/brokkr-snapshot-config.service";
-import { UserFirstInvestmentService } from "../../db/user-first-investment-db/user-first-investment-db.service";
-import { CoingeckoService } from "../../price-oracles/coingecko/coingecko.service";
+import addressesData from "../addresses.json";
+import { AddressEntry } from "../../shared/types/addressEntry";
 
 @Injectable()
 export class DcaSnapshotService {
+  private additionalUserAddresses: AddressEntry[] = addressesData;
+
   constructor(
     private dcaDbService: DcaDbService,
-    private userFirstInvestmentService: UserFirstInvestmentService,
     private dcaContractService: DcaContractService,
     private configService: BrokkrSnapshotConfigService,
-    private coingeckoService: CoingeckoService,
     private logger: Logger,
   ) {}
 
@@ -26,11 +26,25 @@ export class DcaSnapshotService {
     for (const dcaConfig of dcaConfigs) {
       this.logger.debug(`Starting DCA snapshot for address: ${dcaConfig.address}`);
       try {
-        const [tvlUsd, userAddresses, token1Price] = await Promise.all([
+        const [tvlUsd, userAddressesFromDb, token1Price] = await Promise.all([
           this.dcaContractService.getTvlUsd(dcaConfig, snapshotBlock),
           this.dcaDbService.getUniqueUserAddressesByPortfolio(dcaConfig.address),
           this.dcaContractService.getBluechipTokenPrice(dcaConfig, Number(snapshotBlock)),
         ]);
+
+        // Find additional user addresses from addresses.json based on matching productAddress
+        const additionalEntry = this.additionalUserAddresses.find(
+          (entry) => entry.productAddress.toLowerCase() === dcaConfig.address.toLowerCase(),
+        );
+
+        // Merge user addresses from DB and JSON
+        let userAddresses: string[] = [...userAddressesFromDb];
+        if (additionalEntry) {
+          userAddresses = [...userAddresses, ...additionalEntry.userAddresses];
+          this.logger.debug(
+            `Added ${additionalEntry.userAddresses.length} userAddresses from addresses.json for productAddress: ${dcaConfig.address}`,
+          );
+        }
 
         const tokenName = `DCA ${dcaConfig.bluechipTokenCoingeckoId}`;
         const totalTokenSupply = 0; //there is no token representing DCA share

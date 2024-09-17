@@ -4,13 +4,15 @@ import { SingleTokenHoldingData, SnapshotData, TokenBasedSnapshot } from "../../
 import { Address } from "viem";
 import { TokenBasedDbService } from "../../db/token-based-db/token-based-db.service";
 import { TokenBasedContractService } from "../../contract-connectors/token-based-contract/token-based-contract.service";
-import { UserFirstInvestmentService } from "../../db/user-first-investment-db/user-first-investment-db.service";
+import addressesData from "../addresses.json";
+import { AddressEntry } from "../../shared/types/addressEntry";
 
 @Injectable()
 export class TokenBasedSnapshotService {
+  private additionalUserAddresses: AddressEntry[] = addressesData;
+
   constructor(
     private tokenBasedDbService: TokenBasedDbService,
-    private userFirstInvestmentService: UserFirstInvestmentService,
     private tokenBasedContractService: TokenBasedContractService,
     private configService: BrokkrSnapshotConfigService,
     private logger: Logger,
@@ -24,12 +26,26 @@ export class TokenBasedSnapshotService {
     for (const address of addresses) {
       this.logger.debug(`Starting TokenBased snapshot for address: ${address}`);
       try {
-        const [tvlUsd, tokenName, totalTokenSupply, userAddresses] = await Promise.all([
+        const [tvlUsd, tokenName, totalTokenSupply, userAddressesFromDb] = await Promise.all([
           this.tokenBasedContractService.getEquityValuationForPortfolio(address, snapshotBlock),
           this.tokenBasedContractService.getTokenName(address),
           this.tokenBasedContractService.getTotalTokenSupply(address, snapshotBlock),
           this.tokenBasedDbService.getUniqueUserAddressesByPortfolio(address),
         ]);
+
+        // Find additional user addresses from addresses.json based on matching productAddress
+        const additionalEntry = this.additionalUserAddresses.find(
+          (entry) => entry.productAddress.toLowerCase() === address.toLowerCase(),
+        );
+
+        // Merge user addresses from DB and JSON
+        let userAddresses: string[] = [...userAddressesFromDb];
+        if (additionalEntry) {
+          userAddresses = [...userAddresses, ...additionalEntry.userAddresses];
+          this.logger.debug(
+            `Added ${additionalEntry.userAddresses.length} userAddresses from addresses.json for productAddress: ${address}`,
+          );
+        }
 
         const holdingData: SingleTokenHoldingData[] = [];
 
